@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selamat Ulang Tahun! 🎉</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Sacramento&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti & Canvas Fireworks -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+        }
+        .font-handwriting {
+            font-family: 'Caveat', cursive;
+        }
+        .font-script {
+            font-family: 'Sacramento', cursive;
+        }
+        
+        /* Floating animations for balloons */
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-25px) rotate(5deg); }
+        }
+        @keyframes floatFast {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-35px) rotate(-6deg); }
+        }
+        .animate-float-1 { animation: floatSlow 5s ease-in-out infinite; }
+        .animate-float-2 { animation: floatFast 4s ease-in-out infinite 1s; }
+        
+        /* Candle flame animation */
+        @keyframes flicker {
+            0%, 100% { transform: scale(1) rotate(-2deg); opacity: 0.9; }
+            20% { transform: scale(1.1) rotate(2deg); opacity: 1; }
+            40% { transform: scale(0.95) rotate(-1deg); opacity: 0.8; }
+            60% { transform: scale(1.05) rotate(1deg); opacity: 1; }
+            80% { transform: scale(0.98) rotate(-2deg); opacity: 0.85; }
+        }
+        .flame {
+            animation: flicker 1.2s ease-in-out infinite;
+            transform-origin: center bottom;
+        }
+
+        /* Candle smoke animation */
+        @keyframes smoke {
+            0% { transform: translateY(0) scale(1); opacity: 0.8; }
+            100% { transform: translateY(-40px) scale(3); opacity: 0; }
+        }
+        .smoke-particle {
+            animation: smoke 1.5s ease-out forwards;
+        }
+
+        /* Glassmorphism background */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Pulse glowing effect */
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(236, 72, 153, 0.4); }
+            50% { box-shadow: 0 0 30px rgba(236, 72, 153, 0.8); }
+        }
+        .glow-btn {
+            animation: glow 2.5s infinite;
+        }
+    </style>
+</head>
+<body id="bg-body" class="bg-gradient-to-br from-pink-100 via-purple-100 to-indigo-100 min-h-screen text-slate-800 transition-colors duration-700 flex flex-col justify-between relative selection:bg-pink-300 selection:text-pink-900">
+
+    <!-- Background Canvas for Interactive Particle Effects -->
+    <canvas id="fireworks-canvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
+
+    <!-- Decorative Floating Balloons in Background -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div class="absolute top-10 left-[8%] animate-float-1 text-4xl opacity-80 select-none">🎈</div>
+        <div class="absolute top-20 right-[10%] animate-float-2 text-5xl opacity-80 select-none">🎂</div>
+        <div class="absolute bottom-20 left-[12%] animate-float-2 text-5xl opacity-80 select-none">🎁</div>
+        <div class="absolute bottom-32 right-[8%] animate-float-1 text-4xl opacity-80 select-none">✨</div>
+        <div class="absolute top-1/2 left-[3%] animate-float-1 text-3xl opacity-60 select-none">🌸</div>
+        <div class="absolute top-1/3 right-[4%] animate-float-2 text-4xl opacity-60 select-none">🎉</div>
+    </div>
+
+    <!-- Top Action Bar -->
+    <header class="relative z-10 w-full max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+            <span class="text-2xl">🎁</span>
+            <span class="font-bold text-slate-700 tracking-wide text-sm sm:text-base">BirthdayWish</span>
+        </div>
+        <div class="flex space-x-2">
+            <button id="btn-customizer" class="bg-white/80 hover:bg-white text-slate-700 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-semibold shadow-sm hover:shadow transition-all flex items-center space-x-2 border border-slate-200">
+                <i class="fa-solid fa-wand-magic-sparkles text-pink-500"></i>
+                <span>Buat Ucapan Sendiri</span>
+            </button>
+            <button id="btn-share" class="bg-pink-500 hover:bg-pink-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-semibold shadow-md hover:shadow-lg transition-all flex items-center space-x-2">
+                <i class="fa-solid fa-share-nodes"></i>
+                <span id="share-btn-text">Bagikan Link</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="relative z-10 w-full max-w-xl mx-auto px-4 py-6 my-auto flex flex-col items-center justify-center">
+
+        <!-- STAGE 1: ENVELOPE / SURPRISE BOX (INITIAL VIEW) -->
+        <div id="envelope-stage" class="w-full text-center flex flex-col items-center transition-all duration-500">
+            <div class="mb-6">
+                <span class="inline-block bg-pink-200 text-pink-700 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold tracking-wide uppercase shadow-sm">
+                    Surprise For You! 💌
+                </span>
+            </div>
+            
+            <!-- Interactive Card Envelope -->
+            <div id="envelope-card" class="w-full max-w-md bg-white rounded-3xl p-8 shadow-xl border border-pink-100 cursor-pointer transform hover:scale-[1.02] transition-all duration-300 relative overflow-hidden group glow-btn">
+                <div class="absolute -right-8 -top-8 w-24 h-24 bg-pink-100 rounded-full group-hover:scale-125 transition-transform duration-500 opacity-50"></div>
+                
+                <div class="flex flex-col items-center text-center space-y-4">
+                    <div class="w-20 h-20 bg-pink-50 rounded-2xl flex items-center justify-center text-4xl shadow-inner group-hover:rotate-12 transition-transform duration-300">
+                        💌
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1">Pesan Khusus Untuk:</p>
+                        <h1 id="env-recipient" class="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">
+                            [Nama Penerima]
+                        </h1>
+                    </div>
+                    <p class="text-slate-500 text-xs sm:text-sm italic">
+                        "Haii dee, ciee yang gak sabaran mau buka pesannya yaa...Ntar kalau udah buka pesannya, jangan lupa make a wish dulu yaa sebelum niup lilinnya dan jangan lupa didengerin musiknya. Ditunggu kejutan kejutan selanjutnya......."
+                    </p>
+                    <div class="pt-2">
+                        <span class="inline-flex items-center space-x-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white px-5 py-2.5 rounded-full font-bold text-sm shadow-md group-hover:shadow-pink-300/50">
+                            <span>Tap in aku dong Lovee</span>
+                            <i class="fa-solid fa-heart text-xs animate-bounce"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STAGE 2: MAIN BIRTHDAY CARD & INTERACTIVE CAKE -->
+        <div id="card-stage" class="w-full hidden flex-col items-center transition-all duration-700 opacity-0 transform translate-y-8">
+            
+            <div class="glass-card w-full rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden border border-white">
+                
+                <!-- Badge From -->
+                <div class="text-center mb-6">
+                    <span class="inline-block bg-pink-100 text-pink-600 px-4 py-1 rounded-full text-xs font-bold tracking-wider uppercase">
+                        Dari: <span id="display-from">[Nama Pengirim]</span>
+                    </span>
+                </div>
+
+                <!-- Main Greeting Header -->
+                <div class="text-center space-y-2 mb-6">
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-600">
+                        Happy Birthday! 🎉
+                    </h2>
+                    <h3 id="display-to" class="text-2xl sm:text-3xl font-bold text-slate-800 font-handwriting tracking-wide">
+                        [Nama Penerima]
+                    </h3>
+                </div>
+
+                <!-- 🌟 BAGIAN GALERI FOTO KENANGAN (Ganti foto di sini) 🌟 -->
+                <div class="mb-8">
+                    <p class="text-xs text-center text-slate-400 font-bold uppercase tracking-wider mb-3">📸 Kenangan Indah Kita</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <!-- Foto 1 -->
+                        <div class="bg-white p-2 pb-4 rounded-2xl shadow-md transform -rotate-1 hover:rotate-0 transition-transform">
+                            <img src="WhatsApp Image 2026-10-07 at 22.05.00.jpeg" alt="Kenangan 1" class="w-full h-36 object-cover rounded-xl">
+                            <p class="text-center font-handwriting text-slate-600 text-sm mt-2">Momen Bahagia ✨</p>
+                        </div>
+                        <!-- Foto 2 -->
+                        <div class="bg-white p-2 pb-4 rounded-2xl shadow-md transform rotate-1 hover:rotate-0 transition-transform">
+                            <img src="Screenshot 2026-10-07 220536.png" alt="Kenangan 2" class="w-full h-36 object-cover rounded-xl">
+                            <p class="text-center font-handwriting text-slate-600 text-sm mt-2">Selalu Bersama 🤍</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Birthday Cake with Candle -->
+                <div class="my-8 flex flex-col items-center justify-center relative">
+                    <p id="candle-hint" class="text-xs text-pink-500 font-semibold mb-2 animate-pulse flex items-center gap-1">
+                        <i class="fa-solid fa-wind"></i> Klik / Make a birthday wishes nya jangan lupa yaa.............
+                    </p>
+
+                    <div id="cake-container" class="relative cursor-pointer select-none group py-4 p-6">
+                        
+                        <!-- Flame Particle Smoke Container -->
+                        <div id="smoke-container" class="absolute -top-8 left-1/2 -translate-x-1/2 pointer-events-none"></div>
+
+                        <!-- Flame -->
+                        <div id="candle-flame" class="w-5 h-8 bg-gradient-to-t from-amber-500 via-orange-400 to-yellow-200 rounded-full mx-auto shadow-lg flame relative z-10 transition-opacity duration-300">
+                            <div class="w-2 h-4 bg-white/80 rounded-full mx-auto mt-2 blur-[1px]"></div>
+                        </div>
+
+                        <!-- Candle Body -->
+                        <div class="w-3 h-10 bg-gradient-to-b from-pink-300 via-purple-300 to-pink-400 mx-auto rounded-t-sm shadow-sm relative -mt-1 border-b border-pink-400">
+                            <div class="w-full h-full bg-[repeating-linear-gradient(45deg,transparent,transparent_3px,rgba(255,255,255,0.6)_3px,rgba(255,255,255,0.6)_6px)]"></div>
+                        </div>
+
+                        <!-- Cake Top Tier -->
+                        <div class="w-32 h-12 bg-gradient-to-r from-pink-200 via-pink-100 to-pink-200 rounded-t-2xl mx-auto shadow-md relative flex justify-around items-end pb-1 border-t-2 border-white">
+                            <div class="absolute -bottom-2 inset-x-0 flex justify-between px-1">
+                                <div class="w-5 h-4 bg-pink-200 rounded-b-full"></div>
+                                <div class="w-6 h-5 bg-pink-200 rounded-b-full -mt-1"></div>
+                                <div class="w-5 h-3 bg-pink-200 rounded-b-full"></div>
+                                <div class="w-6 h-4 bg-pink-200 rounded-b-full"></div>
+                            </div>
+                            <span class="text-xs">🍓</span>
+                            <span class="text-xs">🫐</span>
+                            <span class="text-xs">🍓</span>
+                        </div>
+
+                        <!-- Cake Bottom Tier -->
+                        <div class="w-44 h-16 bg-gradient-to-r from-purple-200 via-pink-200 to-purple-200 rounded-t-xl mx-auto shadow-lg relative flex justify-center items-center border-t-2 border-white/60">
+                            <div class="w-full border-b-4 border-dashed border-white/50 my-auto"></div>
+                        </div>
+
+                        <!-- Cake Plate -->
+                        <div class="w-52 h-4 bg-slate-200 rounded-full mx-auto shadow-md border-b-2 border-slate-300"></div>
+                    </div>
+                </div>
+
+                <!-- Birthday Message Box -->
+                <div class="bg-white/90 rounded-2xl p-5 shadow-inner border border-pink-100 mb-6">
+                    <i class="fa-solid fa-quote-left text-pink-300 text-xl mb-1 block"></i>
+                    <p id="display-msg" class="text-slate-700 text-sm sm:text-base leading-relaxed text-center font-medium font-handwriting text-xl sm:text-2xl whitespace-pre-line px-2">
+                        [Pesan Ulang Tahun Akan Muncul Di Sini]
+                    </p>
+                    <i class="fa-solid fa-quote-right text-pink-300 text-xl mt-1 block text-right"></i>
+                </div>
+
+                <!-- Audio & Trigger Buttons -->
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <button id="btn-confetti-burst" class="w-full sm:w-auto bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-bold px-5 py-2.5 rounded-full text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-party-horn"></i>
+                        <span>Lempar Confetti! 🎉</span>
+                    </button>
+                    
+                    <button id="btn-audio" class="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-5 py-2.5 rounded-full text-xs sm:text-sm transition-all flex items-center justify-center space-x-2 border border-slate-200">
+                        <i id="audio-icon" class="fa-solid fa-music text-pink-500"></i>
+                        <span id="audio-text">Putar Musik 🎵</span>
+                    </button>
+                    <audio id="my-birthday-song" src="JanganLupaDiDengar.mp3" preload="auto"></audio>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- CUSTOMIZER MODAL -->
+    <div id="modal-customizer" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto">
+            
+            <div class="flex justify-between items-center mb-6 border-b pb-3">
+                <div class="flex items-center space-x-2">
+                    <div class="p-2 bg-pink-100 rounded-xl text-pink-600">
+                        <i class="fa-solid fa-pen-to-square text-lg"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800">Kustomisasi Ucapan</h3>
+                </div>
+                <button id="btn-close-modal" class="text-slate-400 hover:text-slate-600 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100">
+                    &times;
+                </button>
+            </div>
+
+            <form id="customizer-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Nama Yang Ulang Tahun (To):</label>
+                    <input type="text" id="input-to" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none text-sm transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Nama Pengirim (From):</label>
+                    <input type="text" id="input-from" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none text-sm transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Pesan & Doa Ulang Tahun:</label>
+                    <textarea id="input-msg" rows="4" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none text-sm transition-all resize-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Tema Warna Latar:</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button type="button" data-theme="pink" class="theme-option p-2 rounded-xl border-2 border-pink-500 bg-gradient-to-r from-pink-100 to-purple-100 text-xs font-semibold text-center hover:opacity-90">🌸 Soft Pink</button>
+                        <button type="button" data-theme="blue" class="theme-option p-2 rounded-xl border-2 border-transparent bg-gradient-to-r from-blue-100 to-cyan-100 text-xs font-semibold text-center hover:opacity-90">🌊 Ocean Blue</button>
+                        <button type="button" data-theme="sunset" class="theme-option p-2 rounded-xl border-2 border-transparent bg-gradient-to-r from-amber-100 to-orange-100 text-xs font-semibold text-center hover:opacity-90">🌅 Sunset</button>
+                        <button type="button" data-theme="purple" class="theme-option p-2 rounded-xl border-2 border-transparent bg-gradient-to-r from-purple-100 to-indigo-100 text-xs font-semibold text-center hover:opacity-90">✨ Lavender</button>
+                    </div>
+                </div>
+                <div class="pt-4 border-t flex flex-col sm:flex-row gap-2">
+                    <button type="submit" class="flex-1 bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 px-4 rounded-xl text-sm shadow-md transition-all flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-check"></i>
+                        <span>Terapkan & Lihat Preview</span>
+                    </button>
+                </div>
+            </form>
+
+            <div id="generated-link-box" class="mt-6 pt-4 border-t border-slate-100 hidden">
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Link Khusus Siap Dibagikan:</label>
+                <div class="flex items-center space-x-2">
+                    <input type="text" id="output-url" readonly class="flex-1 bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs text-slate-600 font-mono focus:outline-none">
+                    <button id="btn-copy-modal-url" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all flex items-center space-x-1">
+                        <i class="fa-solid fa-copy"></i>
+                        <span>Salin</span>
+                    </button>
+                </div>
+                <p id="copy-status-modal" class="text-[11px] text-emerald-600 font-semibold mt-1.5 hidden">
+                    <i class="fa-solid fa-circle-check"></i> Link berhasil disalin ke clipboard!
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs sm:text-sm font-semibold px-5 py-3 rounded-full shadow-2xl z-50 flex items-center space-x-2 opacity-0 pointer-events-none transition-all duration-300">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-pink-400"></i>
+        <span id="toast-message">Pesan notifikasi</span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="relative z-10 py-4 text-center text-xs text-slate-400">
+        Dibuat dengan ❤️ untuk momen spesialmu.
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        const state = {
+            to: 'Mailovvvv❤️❤️❤️',
+            from: 'Abeee',
+            msg: 'Hai dee... Gimana kabarnya? Semoga dalam kondisi baik baik aja. Selamat ulang tahun manusia avocado ku. Maaf belum bisa membersamai di hari kamu yang spesial ini........Semoga di umur yang sudah menginjak dewasa ini, kamu selalu diberi kesehatan, kebahagiaan, dan kelancaran di setiap proses kamu, amiinn. Terima kasih udah mau bertahan sama sama sampai di titik ini🤍. Semoga suka sama hadiahnya yaa. Sampai ketemu dee...',
+            theme: 'pink',
+            candleBlown: false,
+            audioPlaying: false
+        };
+
+        const themes = {
+            pink: 'from-pink-100 via-purple-100 to-indigo-100',
+            blue: 'from-blue-100 via-cyan-100 to-sky-100',
+            sunset: 'from-amber-100 via-orange-100 to-rose-100',
+            purple: 'from-purple-100 via-indigo-100 to-pink-100'
+        };
+
+        const bgBody = document.getElementById('bg-body');
+        const envelopeStage = document.getElementById('envelope-stage');
+        const cardStage = document.getElementById('card-stage');
+        const envelopeCard = document.getElementById('envelope-card');
+        
+        const envRecipient = document.getElementById('env-recipient');
+        const displayTo = document.getElementById('display-to');
+        const displayFrom = document.getElementById('display-from');
+        const displayMsg = document.getElementById('display-msg');
+
+        const modalCustomizer = document.getElementById('modal-customizer');
+        const btnCustomizer = document.getElementById('btn-customizer');
+        const btnCloseModal = document.getElementById('btn-close-modal');
+        const customizerForm = document.getElementById('customizer-form');
+        
+        const inputTo = document.getElementById('input-to');
+        const inputFrom = document.getElementById('input-from');
+        const inputMsg = document.getElementById('input-msg');
+        
+        const btnShare = document.getElementById('btn-share');
+        const generatedLinkBox = document.getElementById('generated-link-box');
+        const outputUrl = document.getElementById('output-url');
+        const btnCopyModalUrl = document.getElementById('btn-copy-modal-url');
+        const copyStatusModal = document.getElementById('copy-status-modal');
+
+        const cakeContainer = document.getElementById('cake-container');
+        const candleFlame = document.getElementById('candle-flame');
+        const candleHint = document.getElementById('candle-hint');
+        const smokeContainer = document.getElementById('smoke-container');
+        const btnConfettiBurst = document.getElementById('btn-confetti-burst');
+        const btnAudio = document.getElementById('btn-audio');
+        const audioText = document.getElementById('audio-text');
+        const audioIcon = document.getElementById('audio-icon');
+        const myBirthdaySong = document.getElementById('my-birthday-song');
+
+        function loadParamsFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('to')) state.to = urlParams.get('to');
+            if (urlParams.has('from')) state.from = urlParams.get('from');
+            if (urlParams.has('msg')) state.msg = urlParams.get('msg');
+            if (urlParams.has('theme') && themes[urlParams.get('theme')]) {
+                state.theme = urlParams.get('theme');
+            }
+            updateDOMContent();
+        }
+
+        function updateDOMContent() {
+            envRecipient.textContent = state.to;
+            displayTo.textContent = state.to;
+            displayFrom.textContent = state.from;
+            displayMsg.textContent = state.msg;
+
+            bgBody.className = `bg-gradient-to-br ${themes[state.theme]} min-h-screen text-slate-800 transition-colors duration-700 flex flex-col justify-between relative selection:bg-pink-300 selection:text-pink-900`;
+
+            inputTo.value = state.to;
+            inputFrom.value = state.from;
+            inputMsg.value = state.msg;
+            
+            document.querySelectorAll('.theme-option').forEach(btn => {
+                if (btn.dataset.theme === state.theme) {
+                    btn.classList.add('border-pink-500');
+                    btn.classList.remove('border-transparent');
+                } else {
+                    btn.classList.remove('border-pink-500');
+                    btn.classList.add('border-transparent');
+                }
+            });
+        }
+
+        function generateShareableURL() {
+            const baseUrl = window.location.origin + window.location.pathname;
+            const params = new URLSearchParams({
+                to: state.to,
+                from: state.from,
+                msg: state.msg,
+                theme: state.theme
+            });
+            return `${baseUrl}?${params.toString()}`;
+        }
+
+        function triggerConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        function triggerCelebrateEffects() {
+            triggerConfetti();
+            const duration = 3 * 1000;
+            const end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 3,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#ec4899', '#8b5cf6', '#f59e0b']
+                });
+                confetti({
+                    particleCount: 3,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: ['#ec4899', '#8b5cf6', '#f59e0b']
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            })();
+        }
+
+        function toggleAudio() {
+            if (state.audioPlaying) {
+                myBirthdaySong.pause();
+                state.audioPlaying = false;
+                audioText.textContent = 'Putar Musik 🎵';
+                audioIcon.className = 'fa-solid fa-music text-pink-500';
+            } else {
+                myBirthdaySong.play().then(() => {
+                    state.audioPlaying = true;
+                    audioText.textContent = 'Jeda Musik ⏸️';
+                    audioIcon.className = 'fa-solid fa-pause text-pink-500';
+                }).catch(error => {
+                    console.log("Autoplay dicegah oleh browser:", error);
+                    showToast('Klik tombol "Putar Musik" untuk memutar lagu! 🎶');
+                });
+            }
+        }
+
+        btnAudio.addEventListener('click', toggleAudio);
+
+        envelopeCard.addEventListener('click', () => {
+            envelopeStage.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                envelopeStage.classList.add('hidden');
+                cardStage.classList.remove('hidden');
+                cardStage.classList.add('flex');
+                
+                setTimeout(() => {
+                    cardStage.classList.remove('opacity-0', 'translate-y-8');
+                    triggerCelebrateEffects();
+                    
+                    myBirthdaySong.play().then(() => {
+                        state.audioPlaying = true;
+                        audioText.textContent = 'Jeda Musik ⏸️';
+                        audioIcon.className = 'fa-solid fa-pause text-pink-500';
+                    }).catch(err => {
+                        console.log("Gagal autoplay otomatis:", err);
+                    });
+                }, 50);
+            }, 300);
+        });
+
+        cakeContainer.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (state.candleBlown) return;
+
+            state.candleBlown = true;
+            candleFlame.style.opacity = '0';
+            candleHint.innerHTML = '<i class="fa-solid fa-sparkles text-amber-500"></i> Wah, lilinnya sudah ditiup! Make a wish ✨';
+            candleHint.classList.remove('animate-pulse');
+
+            for (let i = 0; i < 5; i++) {
+                const smoke = document.createElement('div');
+                smoke.className = 'w-3 h-3 bg-slate-400/60 rounded-full absolute smoke-particle';
+                smoke.style.left = `${(Math.random() - 0.5) * 20}px`;
+                smoke.style.animationDelay = `${i * 0.1}s`;
+                smokeContainer.appendChild(smoke);
+                
+                setTimeout(() => smoke.remove(), 1600);
+            }
+
+            triggerCelebrateEffects();
+            showToast('Lilin berhasil dipadamkan! Make a wish 🌟');
+        });
+
+        btnConfettiBurst.addEventListener('click', () => {
+            triggerCelebrateEffects();
+        });
+
+        btnCustomizer.addEventListener('click', () => {
+            modalCustomizer.classList.remove('pointer-events-none', 'opacity-0');
+            modalCustomizer.querySelector('div').classList.remove('scale-95');
+        });
+
+        btnCloseModal.addEventListener('click', closeModal);
+
+        function closeModal() {
+            modalCustomizer.classList.add('pointer-events-none', 'opacity-0');
+            modalCustomizer.querySelector('div').classList.add('scale-95');
+        }
+
+        document.querySelectorAll('.theme-option').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                state.theme = btn.dataset.theme;
+                updateDOMContent();
+            });
+        });
+
+        customizerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            state.to = inputTo.value.trim() || 'Sahabatku';
+            state.from = inputFrom.value.trim() || 'Teman Terbaikmu';
+            state.msg = inputMsg.value.trim();
+
+            updateDOMContent();
+            
+            const fullUrl = generateShareableURL();
+            outputUrl.value = fullUrl;
+            generatedLinkBox.classList.remove('hidden');
+
+            showToast('Tampilan ucapan berhasil diperbarui!');
+        });
+
+        function copyToClipboard(text, successMsg) {
+            const tempInput = document.createElement('input');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showToast(successMsg);
+        }
+
+        btnShare.addEventListener('click', () => {
+            const shareUrl = generateShareableURL();
+            copyToClipboard(shareUrl, 'Link ucapan khusus disalin ke clipboard!');
+        });
+
+        btnCopyModalUrl.addEventListener('click', () => {
+            copyToClipboard(outputUrl.value, 'Link ucapan disalin!');
+            copyStatusModal.classList.remove('hidden');
+            setTimeout(() => copyStatusModal.classList.add('hidden'), 3000);
+        });
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            toastMsg.textContent = message;
+            
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+
+        window.onload = loadParamsFromURL;
+    </script>
+</body>
+</html>
